@@ -131,6 +131,45 @@ h1,h2,h3,h4 { font-family:'Outfit','Inter',sans-serif; letter-spacing:-0.5px; }
     margin:1.5rem 1.5rem .8rem;
 }
 
+/* ---- AUTH MODAL ---- */
+#modal-auth {
+    background: var(--bg-main); /* Fundo sólido para esconder o app atrás */
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+#modal-auth.active { display: flex; }
+
+.auth-container {
+    width: 90%;
+    max-width: 400px; 
+    padding: 2.5rem 2rem; 
+    text-align: center;
+    background: var(--bg-surface);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.auth-header { text-align: center; margin-bottom: 2rem; }
+.auth-logo {
+    width: 64px; height: 64px; background: var(--accent); color: var(--bg-main);
+    font-size: 1.8rem; font-weight: 900; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem; box-shadow: var(--accent-glow);
+}
+.auth-header h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+.auth-header p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; }
+
+.input-group { margin-bottom: 1.2rem; }
+.input-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
+.input-group input {
+    width: 100%; background: var(--bg-surface-light); border: 1px solid var(--border);
+    padding: 0.8rem 1rem; border-radius: 12px; color: var(--text-main); font-size: 1rem;
+    transition: var(--transition);
+}
+.input-group input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 4px rgba(191,255,0,0.1); }
+
 /* ---- QUICK WORKOUT CARDS ---- */
 .quick-grid {
     display: flex; gap: 12px; overflow-x: auto;
