@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#080A0C">
+    <meta name="description" content="VB Treinos — Plataforma de treinos personalizados para academia, corrida e ciclismo">
+    <title>VB Treinos | Plataforma Multi-Esporte</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <div id="app">
+        <!-- Main Content -->
+        <main id="main-content">
+            <div class="loader"><div class="spinner"></div></div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-view="plan">
+                <i data-lucide="dumbbell"></i> Plano
+            </button>
+            <button class="nav-item" data-view="library">
+                <i data-lucide="search"></i> Biblioteca
+            </button>
+            <button class="nav-item" data-view="progress">
+                <i data-lucide="bar-chart-2"></i> Progresso
+            </button>
+            <button class="nav-item" data-view="profile">
+                <i data-lucide="user"></i> Perfil
+            </button>
+        </nav>
+
+        <!-- Onboarding Overlay -->
+        <div id="onboarding-overlay" class="overlay hidden">
+            <div class="onboarding-card">
+                <div id="onboarding-steps"></div>
+            </div>
+        </div>
+
+        <!-- Workout Execution Modal -->
+        <div id="modal-workout-run" class="modal-workout">
+            <div class="workout-topbar">
+                <button onclick="App.closeWorkout()"><i data-lucide="x" size="22"></i></button>
+                <div id="w-title" style="font-weight:700;font-size:.95rem">Treino</div>
+                <button><i data-lucide="more-vertical" size="22"></i></button>
+            </div>
+            <div class="workout-metrics">
+                <div class="metric-col">
+                    <div class="metric-val" id="w-duration">00:00</div>
+                    <div class="metric-label">DURAÇÃO</div>
+                </div>
+                <div class="metric-col">
+                    <div class="metric-val" id="w-calories">0</div>
+                    <div class="metric-label">KCAL</div>
+                </div>
+                <div class="metric-col">
+                    <div class="metric-val" id="w-volume">0</div>
+                    <div class="metric-label">VOLUME (KG)</div>
+                </div>
+            </div>
+            <div class="section-label"><span id="w-ex-count">0</span></div>
+            <div id="active-workout-list"></div>
+            <div class="btn-container" style="margin-top:1rem;padding-bottom:2rem">
+                <button class="btn-primary" onclick="App.finishWorkout()">✅ FINALIZAR TREINO</button>
+            </div>
+        </div>
+
+        <!-- Exercise Detail Modal -->
+        <div id="modal-exercise-detail" class="modal-detail">
+            <div class="modal-detail-content">
+                <div style="padding:1.2rem 1.2rem .5rem;display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-size:.75rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:1px">Detalhe do Exercício</span>
+                    <button class="modal-detail-close" onclick="App.closeExerciseDetail()">
+                        <i data-lucide="x" size="18"></i>
+                    </button>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;padding:0 2rem 2rem">
+                    <div style="width:100%;max-width:240px;aspect-ratio:1;background:#fff;border-radius:20px;display:flex;justify-content:center;align-items:center;overflow:hidden;margin-bottom:1.5rem">
+                        <img id="detail-img" src="" style="width:90%;height:90%;object-fit:contain" alt="">
+                    </div>
+                    <h2 id="detail-title" style="text-align:center;font-size:1.3rem;margin-bottom:6px">Exercício</h2>
+                    <div id="detail-tags" style="font-size:.8rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1rem">MÚSCULO • EQUIP</div>
+                    <p id="detail-instructions" style="color:var(--text-muted);text-align:center;font-size:.85rem;line-height:1.6;margin-bottom:.5rem;padding:0 .5rem"></p>
+                    <button class="btn-primary" style="margin-top:1.5rem;max-width:280px" onclick="App.closeExerciseDetail()">ENTENDI</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rest Timer Overlay -->
+        <div id="rest-timer" class="rest-timer-overlay">
+            <div class="rest-timer-box">
+                <div class="timer-label">DESCANSO</div>
+                <div class="timer-value" id="rest-value">90</div>
+                <div class="timer-label">segundos</div>
+                <button onclick="App.skipRest()">Pular ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts (order matters, no modules) -->
+    <script src="js/exercises.js"></script>
+    <script src="js/workoutLogic.js"></script>
+    <script src="js/onboarding.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

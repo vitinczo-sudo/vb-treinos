@@ -1,0 +1,19 @@
+# Vídeos e arquivos pesados
+*.mp4
+*.zip
+
+# Arquivos de sistema e backups
+.DS_Store
+Thumbs.db
+*.bak
+ex_db_generated.js
+exercises_raw.json
+generate_ex_db.py
+translate.py
+fix_translation*.py
+validacao.html
+
+# Pastas de desenvolvimento
+node_modules/
+.vscode/
+.gemini/
