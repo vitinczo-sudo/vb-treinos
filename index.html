@@ -15,6 +15,7 @@
     <link rel="apple-touch-icon" href="assets/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="app">
@@ -107,6 +108,34 @@
     </div>
 
     <!-- Scripts (order matters, no modules) -->
+    <!-- Modais e UI de Auth -->
+    <div id="modal-auth" class="modal">
+        <div class="modal-content auth-container">
+            <div class="auth-header">
+                <div class="auth-logo">VB</div>
+                <h2>Bem-vindo ao VB Treinos</h2>
+                <p>Faça login ou crie sua conta para salvar seu progresso na nuvem.</p>
+            </div>
+            <div id="auth-form-container">
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <input type="email" id="auth-email" placeholder="seu@email.com">
+                </div>
+                <div class="input-group">
+                    <label>Senha</label>
+                    <input type="password" id="auth-password" placeholder="••••••••">
+                </div>
+                <button class="btn-primary" id="btn-login" style="margin-top:1rem">ENTRAR</button>
+                <button class="btn-secondary" id="btn-signup" style="background:none;border:none;margin-top:0.5rem;font-size:0.8rem">Criar nova conta</button>
+            </div>
+            <div id="auth-loading" style="display:none;text-align:center;padding:2rem">
+                <div class="spinner" style="margin:0 auto"></div>
+                <p style="margin-top:1rem">Autenticando...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
     <script src="js/exercises.js"></script>
     <script src="js/workoutLogic.js"></script>
     <script src="js/onboarding.js"></script>
