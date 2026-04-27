@@ -131,33 +131,50 @@ h1,h2,h3,h4 { font-family:'Outfit','Inter',sans-serif; letter-spacing:-0.5px; }
     margin:1.5rem 1.5rem .8rem;
 }
 
-/* ---- AUTH MODAL ---- */
-#modal-auth {
-    background: var(--bg-main); /* Fundo sólido para esconder o app atrás */
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
+/* ---- MODALS ---- */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-deep); z-index: 5000;
+    display: none; align-items: center; justify-content: center;
 }
-#modal-auth.active { display: flex; }
+.modal.active { display: flex; }
 
+.modal-content {
+    background: var(--bg-surface);
+    width: 100%; max-width: 520px;
+    position: relative;
+}
+
+/* ---- AUTH MODAL ---- */
 .auth-container {
-    width: 90%;
-    max-width: 400px; 
-    padding: 2.5rem 2rem; 
+    width: 92%;
+    max-width: 380px; 
+    padding: 3rem 2rem; 
     text-align: center;
     background: var(--bg-surface);
-    border-radius: 24px;
+    border-radius: 28px;
     border: 1px solid var(--border);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.auth-header { text-align: center; margin-bottom: 2rem; }
+.auth-header { margin-bottom: 2.5rem; }
 .auth-logo {
-    width: 64px; height: 64px; background: var(--accent); color: var(--bg-main);
-    font-size: 1.8rem; font-weight: 900; border-radius: 16px;
+    width: 70px; height: 70px; background: var(--accent); color: var(--bg-main);
+    font-size: 2rem; font-weight: 900; border-radius: 20px;
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 1.5rem; box-shadow: var(--accent-glow);
 }
+.auth-header h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; color: #fff; }
+.auth-header p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
+
+.input-group { margin-bottom: 1.5rem; text-align: left; }
+.input-group label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+.input-group input {
+    width: 100%; background: var(--bg-surface-light); border: 1px solid var(--border);
+    padding: 1rem 1.2rem; border-radius: 14px; color: var(--text-main); font-size: 1rem;
+    transition: var(--transition);
+}
+.input-group input:focus { border-color: var(--accent); outline: none; background: rgba(191,255,0,0.05); }
 .auth-header h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
 .auth-header p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; }
 
