@@ -11,12 +11,40 @@ var App = {
 
   init: function() {
     var self = this;
-    Onboarding.start(function(userData) {
-      self.user = userData;
-      self._generatePlan();
-      self.renderDashboard();
-      self._setupNav();
-    });
+    
+    // Iniciar sistema de Auth
+    if (typeof Auth !== 'undefined') {
+        Auth.init(function(profile) {
+            if (!Auth.user) {
+                document.getElementById('modal-auth').classList.add('active');
+                return;
+            }
+            
+            document.getElementById('modal-auth').classList.remove('active');
+            
+            self.user = profile || JSON.parse(localStorage.getItem('vb_user'));
+            
+            if (!self.user) {
+                Onboarding.start(function(userData) {
+                    self.user = userData;
+                    Auth.saveProfile(userData); // Salva no Supabase
+                    self._generatePlan();
+                    self.renderDashboard();
+                    self._setupNav();
+                });
+            } else {
+                self._checkPlan();
+                self.switchView('plan');
+                self._setupNav();
+            }
+            lucide.createIcons();
+        });
+    }
+  },
+
+  _checkPlan: function() {
+    this.plan = JSON.parse(localStorage.getItem('vb_plan'));
+    if (!this.plan) this._generatePlan();
   },
 
   _generatePlan: function() {
@@ -415,13 +443,18 @@ var App = {
 
   finishWorkout: function() {
     var vol = parseInt(document.getElementById('w-volume').textContent) || 0;
-    WorkoutLogic.saveCompletedWorkout({
+    var log = {
       sport: 'gym',
       name: document.getElementById('w-title').textContent,
       duration: this.workoutSeconds,
       volume: vol,
-      exerciseCount: this.plan.days[0].exercises.length
-    });
+      exerciseCount: this.plan.days[0].exercises.length,
+      date: new Date().toISOString()
+    };
+
+    WorkoutLogic.saveCompletedWorkout(log);
+    if (typeof Auth !== 'undefined') Auth.saveWorkout(log); // Salva na nuvem
+    
     this.closeWorkout();
     this.switchView('progress');
   },
@@ -500,10 +533,13 @@ var App = {
   },
 
   // ========== PROGRESS ==========
-  renderProgress: function() {
+  renderProgress: async function() {
     var mc = document.getElementById('main-content');
     var stats = WorkoutLogic.getStats();
-    var history = WorkoutLogic.getHistory();
+    
+    // Tenta sincronizar com a nuvem
+    var history = await Auth.syncHistory();
+    if (history.length === 0) history = WorkoutLogic.getHistory();
 
     // Week streak
     var days = ['D','S','T','Q','Q','S','S'];
