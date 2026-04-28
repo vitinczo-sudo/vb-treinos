@@ -9,37 +9,71 @@ var App = {
   restTimer: null,
   restSeconds: 0,
 
+  activeDay: 0,
+
   init: function() {
     var self = this;
     
-    // Iniciar sistema de Auth
-    if (typeof Auth !== 'undefined') {
-        Auth.init(function(profile) {
-            if (!Auth.user) {
-                document.getElementById('modal-auth').classList.add('active');
-                return;
-            }
-            
-            document.getElementById('modal-auth').classList.remove('active');
-            
-            self.user = profile || JSON.parse(localStorage.getItem('vb_user'));
-            
-            if (!self.user) {
-                Onboarding.start(function(userData) {
-                    self.user = userData;
-                    Auth.saveProfile(userData); // Salva no Supabase
-                    self._generatePlan();
-                    self.renderDashboard();
+    // Verificar se Supabase está disponível e configurado
+    var supabaseReady = typeof Auth !== 'undefined' && typeof window.supabase !== 'undefined';
+    
+    if (supabaseReady) {
+        try {
+            Auth.init(function(profile) {
+                if (!Auth.user) {
+                    document.getElementById('modal-auth').classList.add('active');
+                    return;
+                }
+                
+                document.getElementById('modal-auth').classList.remove('active');
+                
+                self.user = profile || JSON.parse(localStorage.getItem('vb_user'));
+                
+                if (!self.user) {
+                    Onboarding.start(function(userData) {
+                        self.user = userData;
+                        Auth.saveProfile(userData);
+                        self._generatePlan();
+                        self.renderDashboard();
+                        self._setupNav();
+                    });
+                } else {
+                    self._checkPlan();
+                    self.switchView('plan');
                     self._setupNav();
-                });
-            } else {
-                self._checkPlan();
-                self.switchView('plan');
-                self._setupNav();
-            }
-            lucide.createIcons();
-        });
+                }
+                lucide.createIcons();
+            });
+        } catch(e) {
+            console.warn('Supabase não disponível, usando modo offline:', e);
+            self._initOffline();
+        }
+    } else {
+        // Modo offline (sem Supabase)
+        self._initOffline();
     }
+  },
+
+  _initOffline: function() {
+    var self = this;
+    // Esconder modal de auth se existir
+    var authModal = document.getElementById('modal-auth');
+    if (authModal) authModal.classList.remove('active');
+    
+    self.user = JSON.parse(localStorage.getItem('vb_user'));
+    if (!self.user) {
+        Onboarding.start(function(userData) {
+            self.user = userData;
+            self._generatePlan();
+            self.renderDashboard();
+            self._setupNav();
+        });
+    } else {
+        self._checkPlan();
+        self.switchView('plan');
+        self._setupNav();
+    }
+    lucide.createIcons();
   },
 
   _checkPlan: function() {
@@ -147,13 +181,16 @@ var App = {
       chip.addEventListener('click', function() {
         mc.querySelectorAll('.chip[data-day]').forEach(function(c){ c.classList.remove('active'); });
         chip.classList.add('active');
-        self._renderGymDay(parseInt(chip.getAttribute('data-day')));
+        var dayIdx = parseInt(chip.getAttribute('data-day'));
+        self.activeDay = dayIdx;
+        self._renderGymDay(dayIdx);
       });
     });
 
     document.getElementById('btn-start-workout').addEventListener('click', function() {
       var activeIdx = 0;
       mc.querySelectorAll('.chip[data-day]').forEach(function(c,i){ if(c.classList.contains('active')) activeIdx=i; });
+      self.activeDay = activeIdx;
       self.startGymWorkout(activeIdx);
     });
 
@@ -318,31 +355,14 @@ var App = {
 
   // ========== GYM WORKOUT EXECUTION ==========
   startGymWorkout: function(dayIdx) {
-    var self = this;
     var day = this.plan.days[dayIdx];
     if (!day) return;
-    var modal = document.getElementById('modal-workout-run');
-    modal.classList.add('active');
-
-    document.getElementById('w-title').textContent = day.name;
-    document.getElementById('w-ex-count').textContent = day.exercises.length + ' EXERCÍCIOS';
-
-    this._renderWorkoutList(day.exercises);
-
-    // Start timer
-
-    lucide.createIcons();
-
-    // Start timer
-    this.workoutSeconds = 0;
-    if (this.workoutTimer) clearInterval(this.workoutTimer);
-    this.workoutTimer = setInterval(function() {
-      self.workoutSeconds++;
-      var m = Math.floor(self.workoutSeconds/60).toString().padStart(2,'0');
-      var s = (self.workoutSeconds%60).toString().padStart(2,'0');
-      document.getElementById('w-duration').textContent = m + ':' + s;
-      document.getElementById('w-calories').textContent = Math.floor(self.workoutSeconds * 0.12);
-    }, 1000);
+    this.activeDay = dayIdx;
+    var workout = {
+      name: day.name,
+      exercises: day.exercises
+    };
+    this._openWorkoutModal(workout);
   },
 
   toggleSet: function(btn) {
@@ -443,17 +463,20 @@ var App = {
 
   finishWorkout: function() {
     var vol = parseInt(document.getElementById('w-volume').textContent) || 0;
+    var activeExCount = 0;
+    try { activeExCount = this.plan.days[this.activeDay].exercises.length; } catch(e) { activeExCount = 0; }
+    
     var log = {
-      sport: 'gym',
+      sport: this.user.sport || 'gym',
       name: document.getElementById('w-title').textContent,
       duration: this.workoutSeconds,
       volume: vol,
-      exerciseCount: this.plan.days[0].exercises.length,
+      exerciseCount: activeExCount,
       date: new Date().toISOString()
     };
 
     WorkoutLogic.saveCompletedWorkout(log);
-    if (typeof Auth !== 'undefined') Auth.saveWorkout(log); // Salva na nuvem
+    if (typeof Auth !== 'undefined' && Auth.user) Auth.saveWorkout(log);
     
     this.closeWorkout();
     this.switchView('progress');
@@ -538,8 +561,13 @@ var App = {
     var stats = WorkoutLogic.getStats();
     
     // Tenta sincronizar com a nuvem
-    var history = await Auth.syncHistory();
-    if (history.length === 0) history = WorkoutLogic.getHistory();
+    var history = WorkoutLogic.getHistory();
+    if (typeof Auth !== 'undefined' && Auth.user) {
+      try {
+        var cloudHistory = await Auth.syncHistory();
+        if (cloudHistory && cloudHistory.length > 0) history = cloudHistory;
+      } catch(e) { console.warn('Sync offline:', e); }
+    }
 
     // Week streak
     var days = ['D','S','T','Q','Q','S','S'];
@@ -647,6 +675,7 @@ var App = {
     var self = this;
     document.getElementById('btn-reset').addEventListener('click', function() {
       if (confirm('Tem certeza? Todos os dados serão apagados.')) {
+        if (typeof Auth !== 'undefined' && Auth.user) Auth.logout();
         localStorage.clear(); location.reload();
       }
     });
