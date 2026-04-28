@@ -1,8 +1,8 @@
 // VB Treinos — Service Worker (Offline Cache)
-var CACHE = 'vb-treinos-v2';
+var CACHE = 'vb-treinos-v3';
 var ASSETS = [
   '/', '/index.html', '/css/styles.css',
-  '/js/exercises.js', '/js/workoutLogic.js', '/js/onboarding.js', '/js/app.js',
+  '/js/auth.js', '/js/exercises.js', '/js/workoutLogic.js', '/js/onboarding.js', '/js/app.js',
   '/manifest.json'
 ];
 
